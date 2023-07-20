@@ -4,6 +4,7 @@
  **/
 #include "reader.h"
 #include "writer.h"
+#include <cstdlib>
 /**
  * these need to be global variables as you'll need handle cleaning them up in
  *cleanup which will automatically be called on program exit
@@ -16,13 +17,7 @@ void cleanup() {
      * perform any cleanup you need to do here for global pointers
      **/
 }
-constexpr int NUMARGS = 4;
-enum class argtype {
-    PROGNAME,
-    NUMTHREADS,
-    INFILE,
-    OUTFILE
-};
+
 int main(int argc, char** argv) {
     atexit(cleanup);
     /**
