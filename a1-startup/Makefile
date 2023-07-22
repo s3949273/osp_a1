@@ -23,8 +23,6 @@ mtcopier:
 #clean by going into each directory and running make clean
 clean: 
 	@echo "cleaning up..."
-	@rm -rf copier
-	@rm -rf mtcopier
 	@cd copier_files && $(MAKE) clean;
 	@cd mtcopier_files && $(MAKE) clean;
 	@echo "done"
