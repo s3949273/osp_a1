@@ -15,10 +15,13 @@ writer::writer(const std::string& name):
 }
 
 void writer::run() {
-    while(!this->queue.empty()){
+    while(this->queue.size() > 1){
         out << this->queue.front()<<std::endl;
         this->queue.pop_front();
+        std::cout<<this->queue.size()<<" ";
     }
+    out << this->queue.front();
+    this->queue.pop_front();
     //close the ofstream
     out.close();
 }
