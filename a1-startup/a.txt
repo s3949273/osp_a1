@@ -1,0 +1,1815 @@
+COSC1114
+Processes
+Dr. Qiang Fu
+School of computing technologies
+RMIT Classification: Trusted
+Recap
+• Batching vs time-sharing
+2
+RMIT Classification: Trusted
+Batching vs Time-sharing
+• Basic batching
+3
+ComputeRead Print
+ComputeRead Print
+RMIT Classification: Trusted
+Batching vs Time-sharing
+• Pipelined batching
+• IO slow, CPU fast.
+4
+ComputeRead Print
+ComputeRead Print
+ComputeRead Print
+RMIT Classification: Trusted
+Batching vs Time-sharing
+• Multiprogramming
+5
+OS
+job 1
+job 2
+job 3
+job 4
+memory
+• Allow the switch between jobs
+• If job1 is blocked, job2 can run.
+• Good on utilisation.
+• Bad on user experience/interact.
+RMIT Classification: Trusted
+Batching vs Time-sharing
+• Time-sharing systems/Multitasking
+– Frequent switch between programs
+– Humans are very slow
+– The illusion of parallelism
+• Multiprocessing
+– Multiple processing units
+– True parallelism
+6
+RMIT Classification: Trusted
+Today’s Topics
+• Processes
+– User mode vs kernel mode
+• Multitasking/context switch/PCB
+• OS vs processes on control
+• Process communication
+• Process management
+7
+RMIT Classification: Trusted
+Processes
+8
+A program runs as a or multiple processes.
+The most fundamental concept in operating systems
+RMIT Classification: Trusted
+What is a process
+• A program in execution
+• An abstraction of a running program
+• A container that holds all the info needed to run a program
+• An entity associated with an address space and set of resources
+9
+RMIT Classification: Trusted
+Processes
+10
+Processes have three segments: text, data, and stack
+Tanenbaum & Bo, Modern Operating Systems:4th ed., (c) 2013 Prentice-Hall, Inc. All rights reserved.
+RMIT Classification: Trusted
+Processes
+• More specifically, a process has:
+– Memory, code, data, stack, open files,
+– PC, registers, stack pointer, etc.
+• A program may have more than one process
+– Better utilization of resources (more on threads)
+– Better protection
+• A process has two modes:
+– User mode: executing user code in user space
+– Kernel mode: executing kernel code in kernel space
+– User to kernel mode: system call
+11
+RMIT Classification: Trusted
+Recall: OS Overview
+12
+We run user code in user mode in user space.
+We run kernel code in kernel mode in kernel space.
+(more on this!)
+Tanenbaum & Bo, Modern Operating Systems:4th ed., (c) 2013 Prentice-Hall, Inc. All rights reserved.
+RMIT Classification: Trusted
+Kernel vs User Mode
+• Kernel mode
+– Full access to hardware
+– Full access to machine instructions.
+– A crash is catastrophic
+• User mode
+– No direct access to hardware
+– No direct access to privileged instructions (I/O, memory management)
+– A crash only affects the involved process
+• Protecting OS from errant users
+13
+RMIT Classification: Trusted
+Show me the processes
+• Many processes / threads running
+– Try `ps ax’
+– Kernel threads (talk about later)
+– User processes
+14
+RMIT Classification: Trusted
+Multitasking
+• Frequent switch between processes
+– Switching between processes is called ‘Context Switch’
+• Each process is represented in OS by a Process Control Block
+(PCB)
+– PCB describes the context for the process
+• OS uses PCB to keep track of and manage each process within
+the system
+– Process table with PCB entries
+15
+RMIT Classification: Trusted
+Process Control Block (PCB)
+• A large data structure
+• The state information about each
+process is stored in a PCB.
+• Exact contents are system dependent.
+16
+process
+state
+next
+previous
+process id
+program counter
+registers
+memory structure
+open file table
+etc
+scheduling info
+RMIT Classification: Trusted
+PCB: Process States
+• New: the process (P) is being created.
+• Ready: P is waiting to run on the CPU.
+• Running: P’s instructions are being executed
+• Blocked: P is waiting on IO to complete.
+• Terminated: P’s execution complete.
+17
+NEW
+READY RUNNING
+Terminated
+BLOCKED
+interrupt
+IO
+scheduled
+RMIT Classification: Trusted
+PCB: Context Switching
+• Used to save and restore state when context switching.
+• When switching from one process to another
+– Store the state of current process into its PCB
+– Reload the state of new process from its PCB
+18
+process
+state
+next
+previous
+process id
+program counter
+registers
+memory structure
+open file table
+etc
+scheduling info
+RMIT Classification: Trusted
+Choosing a Process to Run
+• How to decide which process to run next?
+– Scheduling: pick up one from the ready processes.
+• We’ll touch on this in more detail later in the course, plus you will write your
+own in Assignment 2.
+• Does OS have the control?
+19
+RMIT Classification: Trusted
+OS and Control?
+• CPU can only be doing one thing at a time
+– if a process is executing, the dispatcher isn’t.
+– So the OS has lost control.
+• How does OS regain control of processor?
+• This is essential to multitasking!
+20
+RMIT Classification: Trusted
+OS and Control?
+• Traps (exception or fault)
+– A system call.
+– An error (illegal instruction, addressing violation, div by 0, etc.).
+– A page fault.
+• Interrupts
+– Character typed at keyboard.
+– Completion of disk operation (controller ready for more work).
+– Hardware timer that generates an interrupt upon time slice
+• Recall preemptive vs cooperative multitasking
+21
+RMIT Classification: Trusted
+OS and Control?
+22
+ready queue CPU
+I/O queuei/o I/O request
+time slice
+expires
+fork a
+child
+wait for
+interrupts
+interrupt
+occurs
+wait queue
+child
+executes
+join
+RMIT Classification: Trusted
+PCB: Other Fields
+•
+Process ID: unique number identifying this
+process.
+•
+Program Counter: indicates the next
+program instruction to execute.
+•
+Registers: stack pointer, index registers, and
+various other system dependent registers.
+•
+Scheduling Info: priority, scheduling
+parameters, pointer to scheduling queue.
+23
+process
+state
+next
+previous
+process id
+program counter
+registers
+memory structure
+open file table
+etc
+scheduling infoRMIT Classification: Trusted
+PCB: Other Fields
+•
+Process ID: unique number identifying this
+process.
+•
+Program Counter: indicates the next
+program instruction to execute.
+•
+Registers: stack pointer, index registers, and
+various other system dependent registers.
+•
+Scheduling Info: priority, scheduling
+parameters, pointer to scheduling queue.
+23
+process
+state
+next
+previous
+process id
+program counter
+registers
+memory structure
+open file table
+etc
+scheduling info
+RMIT Classification: Trusted
+PCB: Other Fields
+• Memory Structure: Page or segment
+tables, base register etc...
+• Open File Table: The set of open files
+allocated to this process.
+• Accounting Information: CPU time,
+elapsed time, memory size, page faults,
+IO blocks, time limits, account numbers.
+24
+process
+state
+next
+previous
+process id
+program counter
+registers
+memory structure
+open file table
+etc
+scheduling info
+RMIT Classification: Trusted
+PCB: Managing Processes
+• OS uses PCB to manage processes
+• PCB contains critical info about the process
+• Where is it???
+– Placed on the kernel stack of each process, not the user space stack for
+protection
+25
+RMIT Classification: Trusted
+Cooperating Processes
+• Processes within a system may be independent or cooperating
+• Independent process cannot affect or be affected by the
+execution of another process
+• Cooperating process can affect or be affected by the execution of
+another process
+26
+RMIT Classification: Trusted
+Cooperating Processes
+• Advantages
+–
+Information sharing: concurrent access to shared files and other
+resources.
+–
+Speedup: while one cooperating process is IO blocked, another can still
+compute.
+–
+Modularity: writing smaller programs which do specific tasks is safer and
+better design.
+–
+Convenience: users wish to perform a number of different operations at
+the same time.
+27
+RMIT Classification: Trusted
+Interprocess Communication
+• Cooperating processes need Interprocess communication (IPC)
+• Two models of IPC
+– Shared memory
+– Message passing
+28
+RMIT Classification: Trusted
+Communications Models
+29
+RMIT Classification: Trusted
+Interprocess Communication
+• Shared memory
+– Fast
+– Convenience of communication
+– Protection and synchronization
+• Message passing
+– No conflicts
+– Easy to implement
+– Good for small amounts of data
+30
+RMIT Classification: Trusted
+Interprocess Communication
+• RPC: remote procedure call
+– a type of IPC
+– allows the execution of a procedure in another address space over a
+network
+31
+RMIT Classification: Trusted
+Process Management
+• The OS kernel offers various system-calls to manage multiple
+processes:
+– create (fork and exec)
+– coordination (wait)
+– termination (exit)
+– communications (IPC and RPC)
+32
+RMIT Classification: Trusted
+Creating a Process
+• When a process creates (fork) another:
+– the parent continues to execute alongside its child(ren), or
+– the parent waits (suspended) until the child(ren) terminate(s).
+• The child may be either:
+– an exact (!PID) duplicate of the parent (fork), running the same program
+from the same PC.
+– a different program (exec).
+33
+RMIT Classification: Trusted
+Fork Steps
+• A fork involves three main steps:
+– Allocating and initialising a new process structure for the child process
+(including PCB).
+– Duplicating the entire context of the parent, including virtual memory.
+– Scheduling the child process to run.
+• Parent is blocked during child process creation.
+34
+RMIT Classification: Trusted
+Fork (UNIX) Example
+35
+switch((pid = fork())){
+case ERROR: /* error (-1) */
+DEBUG("fork failed - unwinding creation");
+return ERROR;
+case 0: /* this is the child */
+DEBUG("Child Running PID - %d",pid);
+...
+break;
+default: /* this is the parent */
+children[child].pid = pid; /* continue execution */
+...
+while(wait(&status) != pid); /* wait on this child */
+RMIT Classification: Trusted
+Exec (UNIX)
+• In UNIX,
+exec causes the current process to begin execution of a
+new program, eg:
+execve(/usr/bin/ping, nil, nil)
+• To perform a `child-exec’ in unix:
+– First the parent forks, and then,
+– the child calls execve to run the new program.
+• Is fork --> execve efficient?
+36
+RMIT Classification: Trusted
+Termination
+• When a process finishes execution, it:
+– terminates voluntarily with the exit system call or,
+– involuntarily as the result of a signal (e.g. kill)
+• In either case, the exit status code is returned to its parent.
+• A parent which is waiting (wait) then resumes execution.
+37RMIT Classification: Trusted
+Termination
+• When a process finishes execution, it:
+– terminates voluntarily with the exit system call or,
+– involuntarily as the result of a signal (e.g. kill)
+• In either case, the exit status code is returned to its parent.
+• A parent which is waiting (wait) then resumes execution.
+37
+RMIT Classification: Trusted
+Modelling Multiprogramming
+38
+CPU utilization as a function of the number of processes in memory.
+Tanenbaum & Bo,Modern Operating Systems:4th ed., (c) 2013 Prentice-Hall, Inc. All rights reserved.
+p: probability of waiting
+
+Stack Overflow
+About
+Products
+For Teams
+Search…
+Home
+PUBLIC
+Questions
+Tags
+Users
+Companies
+COLLECTIVES
+Explore Collectives
+TEAMS
+Stack Overflow for Teams – Start collaborating and sharing organizational knowledge. 
+How to convert a command-line argument to int?
+Asked 13 years, 2 months ago
+Modified 1 year, 1 month ago
+Viewed 196k times
+84
+
+I need to get an argument and convert it to an int. Here is my code so far:
+
+#include <iostream>
+
+
+using namespace std;
+int main(int argc,int argvx[]) {
+    int i=1;
+    int answer = 23;
+    int temp;
+
+    // decode arguments
+    if(argc < 2) {
+        printf("You must provide at least one argument\n");
+        exit(0);
+    }
+
+    // Convert it to an int here
+
+}
+c++argument-passingcommand-line-arguments
+Share
+Follow
+edited Feb 8, 2015 at 21:23
+BartoszKP's user avatar
+BartoszKP
+34.7k1515 gold badges101101 silver badges130130 bronze badges
+asked May 9, 2010 at 13:49
+nosedive25's user avatar
+nosedive25
+2,46755 gold badges3030 silver badges4545 bronze badges
+Add a comment
+8 Answers
+Sorted by:
+
+Highest score (default)
+130
+
+Since this answer was somehow accepted and thus will appear at the top, although it's not the best, I've improved it based on the other answers and the comments.
+
+The C way; simplest, but will treat any invalid number as 0:
+
+#include <cstdlib>
+
+int x = atoi(argv[1]);
+The C way with input checking:
+
+#include <cstdlib>
+
+errno = 0;
+char *endptr;
+long int x = strtol(argv[1], &endptr, 10);
+if (endptr == argv[1]) {
+  std::cerr << "Invalid number: " << argv[1] << '\n';
+} else if (*endptr) {
+  std::cerr << "Trailing characters after number: " << argv[1] << '\n';
+} else if (errno == ERANGE) {
+  std::cerr << "Number out of range: " << argv[1] << '\n';
+}
+The C++ iostreams way with input checking:
+
+#include <sstream>
+
+std::istringstream ss(argv[1]);
+int x;
+if (!(ss >> x)) {
+  std::cerr << "Invalid number: " << argv[1] << '\n';
+} else if (!ss.eof()) {
+  std::cerr << "Trailing characters after number: " << argv[1] << '\n';
+}
+Alternative C++ way since C++11:
+
+#include <stdexcept>
+#include <string>
+
+std::string arg = argv[1];
+try {
+  std::size_t pos;
+  int x = std::stoi(arg, &pos);
+  if (pos < arg.size()) {
+    std::cerr << "Trailing characters after number: " << arg << '\n';
+  }
+} catch (std::invalid_argument const &ex) {
+  std::cerr << "Invalid number: " << arg << '\n';
+} catch (std::out_of_range const &ex) {
+  std::cerr << "Number out of range: " << arg << '\n';
+}
+All four variants assume that argc >= 2. All accept leading whitespace; check isspace(argv[1][0]) if you don't want that. All except atoi reject trailing whitespace.
+
+Share
+Follow
+edited Jul 10, 2018 at 13:43
+answered May 9, 2010 at 13:52
+Thomas's user avatar
+Thomas
+174k4949 gold badges354354 silver badges477477 bronze badges
+5
+I'd recommend against atoi: "The atoi() function has been deprecated by strtol() and should not be used in new code." – 
+WhirlWind
+ May 9, 2010 at 13:54
+10
+How about the fact that it's impossible to tell whether a conversion actually took place with atoi? This would seem a pretty good reason to avoid atoi to me. – 
+CB Bailey
+ May 9, 2010 at 13:55
+3
+@WhirlWind Deprecated by whom? – 
+anon
+ May 9, 2010 at 13:55
+1
+@DrumM OP has using namespace std; in the question. – 
+Thomas
+ May 8, 2017 at 13:25
+2
+Would you mind adding a stoi solution now that we have that? That would make this answer more complete. – 
+NathanOliver - Is on Strike
+ Jul 9, 2018 at 13:11
+Show 8 more comments
+27
+
+Note that your main arguments are not correct. The standard form should be:
+
+int main(int argc, char *argv[])
+or equivalently:
+
+int main(int argc, char **argv)
+There are many ways to achieve the conversion. This is one approach:
+
+#include <sstream>
+
+int main(int argc, char *argv[])
+{
+    if (argc >= 2)
+    {
+        std::istringstream iss( argv[1] );
+        int val;
+
+        if (iss >> val)
+        {
+            // Conversion successful
+        }
+    }
+
+    return 0;
+}
+Share
+Follow
+answered May 9, 2010 at 13:53
+CB Bailey's user avatar
+CB Bailey
+752k104104 gold badges632632 silver badges656656 bronze badges
+Oh opps that was my mistake. I originally had it that way but then started trying different things and forgot to change it back. – 
+nosedive25
+ May 9, 2010 at 14:01
+Add a comment
+21
+
+std::stoi from string could also be used.
+
+    #include <string>
+
+    using namespace std;
+
+    int main (int argc, char** argv)
+    {
+         if (argc >= 2)
+         {
+             int val = stoi(argv[1]);
+             // ...    
+         }
+         return 0;
+    }
+Share
+Follow
+answered Feb 22, 2016 at 14:24
+HelloWorld's user avatar
+HelloWorld
+6971010 silver badges1616 bronze badges
+Add a comment
+4
+
+As WhirlWind has pointed out, the recommendations to use atoi aren't really very good. atoi has no way to indicate an error, so you get the same return from atoi("0"); as you do from atoi("abc");. The first is clearly meaningful, but the second is a clear error.
+
+He also recommended strtol, which is perfectly fine, if a little bit clumsy. Another possibility would be to use sscanf, something like:
+
+if (1==sscanf(argv[1], "%d", &temp))
+    // successful conversion
+else
+    // couldn't convert input
+note that strtol does give slightly more detailed results though -- in particular, if you got an argument like 123abc, the sscanf call would simply say it had converted a number (123), whereas strtol would not only tel you it had converted the number, but also a pointer to the a (i.e., the beginning of the part it could not convert to a number).
+
+Since you're using C++, you could also consider using boost::lexical_cast. This is almost as simple to use as atoi, but also provides (roughly) the same level of detail in reporting errors as strtol. The biggest expense is that it can throw exceptions, so to use it your code has to be exception-safe. If you're writing C++, you should do that anyway, but it kind of forces the issue.
+
+Share
+Follow
+answered May 9, 2010 at 14:41
+Jerry Coffin's user avatar
+Jerry Coffin
+475k8080 gold badges625625 silver badges11091109 bronze badges
+Add a comment
+2
+
+Take a look at strtol(), if you're using the C standard library.
+
+Share
+Follow
+answered May 9, 2010 at 13:52
+WhirlWind's user avatar
+WhirlWind
+14k33 gold badges4242 silver badges4141 bronze badges
+Add a comment
+1
+
+The approach with istringstream can be improved in order to check that no other characters have been inserted after the expected argument:
+
+#include <sstream>
+
+int main(int argc, char *argv[])
+{
+    if (argc >= 2)
+    {
+        std::istringstream iss( argv[1] );
+        int val;
+
+        if ((iss >> val) && iss.eof()) // Check eofbit
+        {
+            // Conversion successful
+        }
+    }
+
+    return 0;
+}
+Share
+Follow
+answered Feb 4, 2016 at 16:38
+gentooise's user avatar
+gentooise
+40633 silver badges88 bronze badges
+Add a comment
+0
+
+Like that we can do....
+
+int main(int argc, char *argv[]) {
+
+    int a, b, c;
+    *// Converting string type to integer type
+    // using function "atoi( argument)"* 
+
+    a = atoi(argv[1]);     
+    b = atoi(argv[2]);
+    c = atoi(argv[3]);
+
+ }
+Share
+Follow
+edited Apr 8, 2018 at 7:12
+K.Dᴀᴠɪs's user avatar
+K.Dᴀᴠɪs
+9,9451111 gold badges3333 silver badges4343 bronze badges
+answered Apr 8, 2018 at 6:53
+Ramanand Yadav's user avatar
+Ramanand Yadav
+30933 silver badges33 bronze badges
+Add a comment
+0
+
+In my opinion this is the most practical way to pass your variables. Using std::stoi. It's good practice to use std:: and NOT to use namespace; this is why I can define a string with "string" as the variable name
+
+#include <iostream>
+#include <string>
+
+int main(int argc, char **argv)
+{
+    std::string string{argv[1]};
+    int integer1{std::stoi(argv[2])};
+    int integer2{std::stoi(argv[3])};
+
+    int sum{integer1 + integer2};
+    std::cout << string << " sum " << sum;
+}
+Example:
+
+./out this 40 1  // input 
+this sum 41      // output
+Share
+Follow
+answered Jun 21, 2022 at 17:45
+Andrew Garcia's user avatar
+Andrew Garcia
+5133 bronze badges
+Add a comment
+Your Answer
+Sign up or log in
+Post as a guest
+Name
+Email
+Required, but never shown
+
+By clicking “Post Your Answer”, you agree to our terms of service and acknowledge that you have read and understand our privacy policy and code of conduct.
+
+Not the answer you're looking for? Browse other questions tagged c++argument-passingcommand-line-arguments or ask your own question.
+The Overflow Blog
+How the Python team is adapting the language for an AI future (Ep. 593)
+Featured on Meta
+Colors update: A more detailed look
+Stack Overflow at WeAreDevelopers World Congress in Berlin
+Temporary policy: Generative AI (e.g., ChatGPT) is banned
+Launching 2 new collectives: PHP and NLP
+Conclusions from title-drafting and question-content assistance experiments...
+Linked
+1
+How to validate an integer properly in C++?
+0
+How to convert command-line argument to int in C++
+-3
+Command line argument to int in less then 3 LOC?
+4
+Invalid input in C++ stream
+1
+Converting *argv[] to int using atoi
+Related
+3
+Command-line arguments in C++
+1
+C++ using command line args
+8
+Input from command line
+47
+Convert command line argument to string
+1
+How to process command line arguments?
+3
+C++ Accepting a command-line argument with parameters
+3
+command line arguments - int instead of ascii
+0
+Command line Argument to be parsed as integer value
+0
+How do I pass an integer argument to a shell script which then passes it to a program?
+1
+C command line arguments to int
+Hot Network Questions
+Unwanted oscillations on op-amp output - capacitance issue?
+Was the release of "Barbie" intentionally coordinated to be on the same day as "Oppenheimer"?
+German opening (lower) quotation mark in plain TeX
+Airline refuses to issue proper receipt. Should I trigger a chargeback?
+How does 2M for DOS (2 MB flormatted floppy disks) achieve what it does?
+How feasible is a manned flight to Apophis in 2029 using Artemis or Starship?
+Will the fact that you traveled to Pakistan be a problem if you go to India?
+How to serve the gods
+Why does this BBC presenter say "put pay", whereas dictionaries say "put paid"?
+Brought on to Failing Project and Might Lose Job
+English abbreviation : they're or they're not
+What are the pitfalls of indirect implicit casting?
+Please identify an Asimov short story with miniature typewriter
+Rejecting a Paper from a Prestigious Lab as a Reviewer
+What should I do after I found a coding mistake in my masters thesis?
+Why can I write "Please open window" without an article?
+Can you connect multiple PCBs in series?
+Visualizing empirical PDF from monotonically decreasing density
+Is it better to use swiss pass or rent a car?
+Why is the Master Sword not stronger in TOTK compared to BOTW?
+Is it appropriate to try to contact the referee of a paper after it has been accepted and published?
+Who counts as a pupil or as a student in Germany?
+If a crystal has alternating layers of different atoms, will it display different properties depending on which layer is exposed?
+How to buy a lot of 65803 Technic plates for a mosaic project?
+ Question feed
+
+STACK OVERFLOW
+Questions
+Help
+PRODUCTS
+Teams
+Advertising
+Collectives
+Talent
+COMPANY
+About
+Press
+Work Here
+Legal
+Privacy Policy
+Terms of Service
+Contact Us
+Cookie Settings
+Cookie Policy
+STACK EXCHANGE NETWORK
+Technology
+Culture & recreation
+Life & arts
+Science
+Professional
+Business
+API
+Data
+Blog
+Facebook
+Twitter
+LinkedIn
+Instagram
+Site design / logo © 2023 Stack Exchange Inc; user contributions licensed under CC BY-SA. rev 2023.7.25.43544
+
+
+
+POSIX thread (pthread) libraries
+The POSIX thread libraries are a standards based thread API for C/C++. It allows one to spawn a new concurrent process flow. It is most effective on multi-processor or multi-core systems where the process flow can be scheduled to run on another processor thus gaining speed through parallel or distributed processing. Threads require less overhead than "forking" or spawning a new process because the system does not initialize a new system virtual memory space and environment for the process. While most effective on a multiprocessor system, gains are also found on uniprocessor systems which exploit latency in I/O and other system functions which may halt process execution. (One thread may execute while another is waiting for I/O or some other system latency.) Parallel programming technologies such as MPI and PVM are used in a distributed computing environment while threads are limited to a single computer system. All threads within a process share the same address space. A thread is spawned by defining a function and it's arguments which will be processed in the thread. The purpose of using the POSIX thread library in your software is to execute software faster.
+
+Table of Contents:
+# Thread Basics
+# Thread Creation and Termination
+# Thread Synchronization
+# Thread Scheduling
+# Thread Pitfalls
+# Thread Debugging
+# Thread Man Pages
+# Links
+# Books
+Thread Basics:
+Thread operations include thread creation, termination, synchronization (joins,blocking), scheduling, data management and process interaction.
+A thread does not maintain a list of created threads, nor does it know the thread that created it.
+All threads within a process share the same address space.
+Threads in the same process share:
+Process instructions
+Most data
+open files (descriptors)
+signals and signal handlers
+current working directory
+User and group id
+Each thread has a unique:
+Thread ID
+set of registers, stack pointer
+stack for local variables, return addresses
+signal mask
+priority
+Return value: errno
+pthread functions return "0" if OK.
+Thread Creation and Termination:
+Example: pthread1.c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+void *print_message_function( void *ptr );
+
+main()
+{
+     pthread_t thread1, thread2;
+     char *message1 = "Thread 1";
+     char *message2 = "Thread 2";
+     int  iret1, iret2;
+
+    /* Create independent threads each of which will execute function */
+
+     iret1 = pthread_create( &thread1, NULL, print_message_function, (void*) message1);
+     iret2 = pthread_create( &thread2, NULL, print_message_function, (void*) message2);
+
+     /* Wait till threads are complete before main continues. Unless we  */
+     /* wait we run the risk of executing an exit which will terminate   */
+     /* the process and all threads before the threads have completed.   */
+
+     pthread_join( thread1, NULL);
+     pthread_join( thread2, NULL); 
+
+     printf("Thread 1 returns: %d\n",iret1);
+     printf("Thread 2 returns: %d\n",iret2);
+     exit(0);
+}
+
+void *print_message_function( void *ptr )
+{
+     char *message;
+     message = (char *) ptr;
+     printf("%s \n", message);
+}
+Compile:
+
+C compiler: cc -lpthread pthread1.c
+or
+C++ compiler: g++ -lpthread pthread1.c
+
+Run: ./a.out
+Results:
+Thread 1
+Thread 2
+Thread 1 returns: 0
+Thread 2 returns: 0
+Details:
+
+In this example the same function is used in each thread. The arguments are different. The functions need not be the same.
+Threads terminate by explicitly calling pthread_exit, by letting the function return, or by a call to the function exit which will terminate the process including any threads.
+Function call: pthread_create
+    int pthread_create(pthread_t * thread, 
+                       const pthread_attr_t * attr,
+                       void * (*start_routine)(void *), 
+                       void *arg);
+    
+Arguments:
+thread - returns the thread id. (unsigned long int defined in bits/pthreadtypes.h)
+attr - Set to NULL if default thread attributes are used. (else define members of the struct pthread_attr_t defined in bits/pthreadtypes.h) Attributes include:
+detached state (joinable? Default: PTHREAD_CREATE_JOINABLE. Other option: PTHREAD_CREATE_DETACHED)
+scheduling policy (real-time? PTHREAD_INHERIT_SCHED,PTHREAD_EXPLICIT_SCHED,SCHED_OTHER)
+scheduling parameter
+inheritsched attribute (Default: PTHREAD_EXPLICIT_SCHED Inherit from parent thread: PTHREAD_INHERIT_SCHED)
+scope (Kernel threads: PTHREAD_SCOPE_SYSTEM User threads: PTHREAD_SCOPE_PROCESS Pick one or the other not both.)
+guard size
+stack address (See unistd.h and bits/posix_opt.h _POSIX_THREAD_ATTR_STACKADDR)
+stack size (default minimum PTHREAD_STACK_SIZE set in pthread.h),
+void * (*start_routine) - pointer to the function to be threaded. Function has a single argument: pointer to void.
+*arg - pointer to argument of function. To pass multiple arguments, send a pointer to a structure.
+Function call: pthread_exit
+    void pthread_exit(void *retval);
+    
+Arguments:
+retval - Return value of thread.
+This routine kills the thread. The pthread_exit function never returns. If the thread is not detached, the thread id and return value may be examined from another thread by using pthread_join.
+Note: the return pointer *retval, must not be of local scope otherwise it would cease to exist once the thread terminates.
+
+[C++ pitfalls]: The above sample program will compile with the GNU C and C++ compiler g++. The following function pointer representation below will work for C but not C++. Note the subtle differences and avoid the pitfall below:
+    void print_message_function( void *ptr );
+    ...
+    ...
+    iret1 = pthread_create( &thread1, NULL, (void*)&print_message_function, (void*) message1);
+    ...
+    ...
+    
+Thread Synchronization:
+The threads library provides three synchronization mechanisms:
+
+mutexes - Mutual exclusion lock: Block access to variables by other threads. This enforces exclusive access by a thread to a variable or set of variables.
+joins - Make a thread wait till others are complete (terminated).
+condition variables - data type pthread_cond_t
+Mutexes:
+Mutexes are used to prevent data inconsistencies due to race conditions. A race condition often occurs when two or more threads need to perform operations on the same memory area, but the results of computations depends on the order in which these operations are performed. Mutexes are used for serializing shared resources. Anytime a global resource is accessed by more than one thread the resource should have a Mutex associated with it. One can apply a mutex to protect a segment of memory ("critical region") from other threads. Mutexes can be applied only to threads in a single process and do not work between processes as do semaphores.
+Example threaded function:
+
+Without Mutex	With Mutex
+int counter=0;
+
+/* Function C */
+void functionC()
+{
+
+   counter++
+
+}
+                
+/* Note scope of variable and mutex are the same */
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+int counter=0;
+
+/* Function C */
+void functionC()
+{
+   pthread_mutex_lock( &mutex1 );
+   counter++
+   pthread_mutex_unlock( &mutex1 );
+}
+Possible execution sequence
+Thread 1	Thread 2	Thread 1	Thread 2
+counter = 0	counter = 0	counter = 0	counter = 0
+counter = 1	counter = 1	counter = 1	Thread 2 locked out.
+Thread 1 has exclusive use of variable counter
+
+
+
+counter = 2
+If register load and store operations for the incrementing of variable counter occurs with unfortunate timing, it is theoretically possible to have each thread increment and overwrite the same variable with the same value. Another possibility is that thread two would first increment counter locking out thread one until complete and then thread one would increment it to 2.
+Sequence	Thread 1	Thread 2
+1	counter = 0	counter=0
+2	Thread 1 locked out.
+Thread 2 has exclusive use of variable counter	counter = 1
+3	counter = 2	
+Code listing: mutex1.c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+void *functionC();
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+int  counter = 0;
+
+main()
+{
+   int rc1, rc2;
+   pthread_t thread1, thread2;
+
+   /* Create independent threads each of which will execute functionC */
+
+   if( (rc1=pthread_create( &thread1, NULL, &functionC, NULL)) )
+   {
+      printf("Thread creation failed: %d\n", rc1);
+   }
+
+   if( (rc2=pthread_create( &thread2, NULL, &functionC, NULL)) )
+   {
+      printf("Thread creation failed: %d\n", rc2);
+   }
+
+   /* Wait till threads are complete before main continues. Unless we  */
+   /* wait we run the risk of executing an exit which will terminate   */
+   /* the process and all threads before the threads have completed.   */
+
+   pthread_join( thread1, NULL);
+   pthread_join( thread2, NULL); 
+
+   exit(0);
+}
+
+void *functionC()
+{
+   pthread_mutex_lock( &mutex1 );
+   counter++;
+   printf("Counter value: %d\n",counter);
+   pthread_mutex_unlock( &mutex1 );
+}
+Compile: cc -lpthread mutex1.c
+Run: ./a.out
+Results:
+
+Counter value: 1
+Counter value: 2
+When a mutex lock is attempted against a mutex which is held by another thread, the thread is blocked until the mutex is unlocked. When a thread terminates, the mutex does not unless explicitly unlocked. Nothing happens by default.
+
+Joins:
+A join is performed when one wants to wait for a thread to finish. A thread calling routine may launch multiple threads then wait for them to finish to get the results. One wait for the completion of the threads with a join.
+Sample code: join1.c
+
+#include <stdio.h>
+#include <pthread.h>
+
+#define NTHREADS 10
+void *thread_function(void *);
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+int  counter = 0;
+
+main()
+{
+   pthread_t thread_id[NTHREADS];
+   int i, j;
+
+   for(i=0; i < NTHREADS; i++)
+   {
+      pthread_create( &thread_id[i], NULL, thread_function, NULL );
+   }
+
+   for(j=0; j < NTHREADS; j++)
+   {
+      pthread_join( thread_id[j], NULL); 
+   }
+  
+   /* Now that all threads are complete I can print the final result.     */
+   /* Without the join I could be printing a value before all the threads */
+   /* have been completed.                                                */
+
+   printf("Final counter value: %d\n", counter);
+}
+
+void *thread_function(void *dummyPtr)
+{
+   printf("Thread number %ld\n", pthread_self());
+   pthread_mutex_lock( &mutex1 );
+   counter++;
+   pthread_mutex_unlock( &mutex1 );
+}
+Compile: cc -lpthread join1.c
+Run: ./a.out
+Results:
+
+Thread number 1026
+Thread number 2051
+Thread number 3076
+Thread number 4101
+Thread number 5126
+Thread number 6151
+Thread number 7176
+Thread number 8201
+Thread number 9226
+Thread number 10251
+Final counter value: 10
+Condition Variables:
+A condition variable is a variable of type pthread_cond_t and is used with the appropriate functions for waiting and later, process continuation. The condition variable mechanism allows threads to suspend execution and relinquish the processor until some condition is true. A condition variable must always be associated with a mutex to avoid a race condition created by one thread preparing to wait and another thread which may signal the condition before the first thread actually waits on it resulting in a deadlock. The thread will be perpetually waiting for a signal that is never sent. Any mutex can be used, there is no explicit link between the mutex and the condition variable.
+
+Functions used in conjunction with the condition variable:
+
+Creating/Destroying:
+pthread_cond_init
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_destroy
+Waiting on condition:
+pthread_cond_wait
+pthread_cond_timedwait - place limit on how long it will block.
+Waking thread based on condition:
+pthread_cond_signal
+pthread_cond_broadcast - wake up all threads blocked by the specified condition variable.
+Example code: cond1.c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+pthread_mutex_t count_mutex     = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t condition_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t  condition_cond  = PTHREAD_COND_INITIALIZER;
+
+void *functionCount1();
+void *functionCount2();
+int  count = 0;
+#define COUNT_DONE  10
+#define COUNT_HALT1  3
+#define COUNT_HALT2  6
+
+main()
+{
+   pthread_t thread1, thread2;
+
+   pthread_create( &thread1, NULL, &functionCount1, NULL);
+   pthread_create( &thread2, NULL, &functionCount2, NULL);
+   pthread_join( thread1, NULL);
+   pthread_join( thread2, NULL);
+
+   exit(0);
+}
+
+void *functionCount1()
+{
+   for(;;)
+   {
+      pthread_mutex_lock( &condition_mutex );
+      while( count >= COUNT_HALT1 && count <= COUNT_HALT2 )
+      {
+         pthread_cond_wait( &condition_cond, &condition_mutex );
+      }
+      pthread_mutex_unlock( &condition_mutex );
+
+      pthread_mutex_lock( &count_mutex );
+      count++;
+      printf("Counter value functionCount1: %d\n",count);
+      pthread_mutex_unlock( &count_mutex );
+
+      if(count >= COUNT_DONE) return(NULL);
+    }
+}
+
+void *functionCount2()
+{
+    for(;;)
+    {
+       pthread_mutex_lock( &condition_mutex );
+       if( count < COUNT_HALT1 || count > COUNT_HALT2 )
+       {
+          pthread_cond_signal( &condition_cond );
+       }
+       pthread_mutex_unlock( &condition_mutex );
+
+       pthread_mutex_lock( &count_mutex );
+       count++;
+       printf("Counter value functionCount2: %d\n",count);
+       pthread_mutex_unlock( &count_mutex );
+
+       if(count >= COUNT_DONE) return(NULL);
+    }
+
+}
+Compile: cc -lpthread cond1.c
+Run: ./a.out
+Results:
+
+Counter value functionCount1: 1
+Counter value functionCount1: 2
+Counter value functionCount1: 3
+Counter value functionCount2: 4
+Counter value functionCount2: 5
+Counter value functionCount2: 6
+Counter value functionCount2: 7
+Counter value functionCount1: 8
+Counter value functionCount1: 9
+Counter value functionCount1: 10
+Counter value functionCount2: 11
+Note that functionCount1() was halted while count was between the values COUNT_HALT1 and COUNT_HALT2. The only thing that has been ensures is that functionCount2 will increment the count between the values COUNT_HALT1 and COUNT_HALT2. Everything else is random.
+
+The logic conditions (the "if" and "while" statements) must be chosen to insure that the "signal" is executed if the "wait" is ever processed. Poor software logic can also lead to a deadlock condition.
+
+Note: Race conditions abound with this example because count is used as the condition and can't be locked in the while statement without causing deadlock. I'll work on a cleaner example but it is an example of a condition variable.
+
+Thread Scheduling:
+When this option is enabled, each thread may have its own scheduling properties. Scheduling attributes may be specified:
+
+during thread creation
+by dynamically by changing the attributes of a thread already created
+by defining the effect of a mutex on the thread's scheduling when creating a mutex
+by dynamically changing the scheduling of a thread during synchronization operations.
+The threads library provides default values that are sufficient for most cases.
+Thread Pitfalls:
+Race conditions: While the code may appear on the screen in the order you wish the code to execute, threads are scheduled by the operating system and are executed at random. It cannot be assumed that threads are executed in the order they are created. They may also execute at different speeds. When threads are executing (racing to complete) they may give unexpected results (race condition). Mutexes and joins must be utilized to achieve a predictable execution order and outcome.
+Thread safe code: The threaded routines must call functions which are "thread safe". This means that there are no static or global variables which other threads may clobber or read assuming single threaded operation. If static or global variables are used then mutexes must be applied or the functions must be re-written to avoid the use of these variables. In C, local variables are dynamically allocated on the stack. Therefore, any function that does not use static data or other shared resources is thread-safe. Thread-unsafe functions may be used by only one thread at a time in a program and the uniqueness of the thread must be ensured. Many non-reentrant functions return a pointer to static data. This can be avoided by returning dynamically allocated data or using caller-provided storage. An example of a non-thread safe function is strtok which is also not re-entrant. The "thread safe" version is the re-entrant version strtok_r.
+Mutex Deadlock: This condition occurs when a mutex is applied but then not "unlocked". This causes program execution to halt indefinitely. It can also be caused by poor application of mutexes or joins. Be careful when applying two or more mutexes to a section of code. If the first pthread_mutex_lock is applied and the second pthread_mutex_lock fails due to another thread applying a mutex, the first mutex may eventually lock all other threads from accessing data including the thread which holds the second mutex. The threads may wait indefinitely for the resource to become free causing a deadlock. It is best to test and if failure occurs, free the resources and stall before retrying.
+    ...
+    pthread_mutex_lock(&mutex_1);
+    while ( pthread_mutex_trylock(&mutex_2) )  /* Test if already locked   */
+    {
+       pthread_mutex_unlock(&mutex_1);  /* Free resource to avoid deadlock */
+       ...
+       /* stall here   */
+       ...
+       pthread_mutex_lock(&mutex_1);
+    }
+    count++;
+    pthread_mutex_unlock(&mutex_1);
+    pthread_mutex_unlock(&mutex_2);
+    ...
+    
+The order of applying the mutex is also important. The following code segment illustrates a potential for deadlock:
+
+    void *function1()
+    {
+       ...
+       pthread_mutex_lock(&lock1);           - Execution step 1
+       pthread_mutex_lock(&lock2);           - Execution step 3 DEADLOCK!!!
+       ...
+       ...
+       pthread_mutex_lock(&lock2);
+       pthread_mutex_lock(&lock1);
+       ...
+    } 
+
+    void *function2()
+    {
+       ...
+       pthread_mutex_lock(&lock2);           - Execution step 2
+       pthread_mutex_lock(&lock1);
+       ...
+       ...
+       pthread_mutex_lock(&lock1);
+       pthread_mutex_lock(&lock2);
+       ...
+    } 
+  
+    main()
+    {
+       ...
+       pthread_create(&thread1, NULL, function1, NULL);
+       pthread_create(&thread2, NULL, function1, NULL);
+       ...
+    }
+    
+If function1 acquires the first mutex and function2 acquires the second, all resources are tied up and locked.
+Condition Variable Deadlock: The logic conditions (the "if" and "while" statements) must be chosen to insure that the "signal" is executed if the "wait" is ever processed.
+Thread Debugging:
+GDB:
+GDB: Stopping and starting multi-thread programs
+GDB/MI: Threads commands
+DDD:
+Examining Threads
+Thread Man Pages:
+pthread_atfork - register handlers to be called at fork(2) time
+pthread_attr_destroy [pthread_attr_init] - thread creation attributes
+pthread_attr_getdetachstate [pthread_attr_init] - thread creation attributes
+pthread_attr_getinheritsched [pthread_attr_init] - thread creation attributes
+pthread_attr_getschedparam [pthread_attr_init] - thread creation attributes
+pthread_attr_getschedpolicy [pthread_attr_init] - thread creation attributes
+pthread_attr_getscope [pthread_attr_init] - thread creation attributes
+pthread_attr_init - thread creation attributes
+pthread_attr_setdetachstate [pthread_attr_init] - thread creation attributes
+pthread_attr_setinheritsched [pthread_attr_init] - thread creation attributes
+pthread_attr_setschedparam [pthread_attr_init] - thread creation attributes
+pthread_attr_setschedpolicy [pthread_attr_init] - thread creation attributes
+pthread_attr_setscope [pthread_attr_init] - thread creation attributes
+pthread_cancel - thread cancellation
+pthread_cleanup_pop [pthread_cleanup_push] - install and remove cleanup handlers
+pthread_cleanup_pop_restore_np [pthread_cleanup_push] - install and remove cleanup handlers
+pthread_cleanup_push - install and remove cleanup handlers
+pthread_cleanup_push_defer_np [pthread_cleanup_push] - install and remove cleanup handlers
+pthread_condattr_destroy [pthread_condattr_init] - condition creation attributes
+pthread_condattr_init - condition creation attributes
+pthread_cond_broadcast [pthread_cond_init] - operations on conditions
+pthread_cond_destroy [pthread_cond_init] - operations on conditions
+pthread_cond_init - operations on conditions
+pthread_cond_signal [pthread_cond_init] - operations on conditions
+pthread_cond_timedwait [pthread_cond_init] - operations on conditions
+pthread_cond_wait [pthread_cond_init] - operations on conditions
+pthread_create - create a new thread
+pthread_detach - put a running thread in the detached state
+pthread_equal - compare two thread identifiers
+pthread_exit - terminate the calling thread
+pthread_getschedparam [pthread_setschedparam] - control thread scheduling parameters
+pthread_getspecific [pthread_key_create] - management of thread-specific data
+pthread_join - wait for termination of another thread
+pthread_key_create - management of thread-specific data
+pthread_key_delete [pthread_key_create] - management of thread-specific data
+pthread_kill_other_threads_np - terminate all threads in program except calling thread
+pthread_kill [pthread_sigmask] - handling of signals in threads
+pthread_mutexattr_destroy [pthread_mutexattr_init] - mutex creation attributes
+pthread_mutexattr_getkind_np [pthread_mutexattr_init] - mutex creation attributes
+pthread_mutexattr_init - mutex creation attributes
+pthread_mutexattr_setkind_np [pthread_mutexattr_init] - mutex creation attributes
+pthread_mutex_destroy [pthread_mutex_init] - operations on mutexes
+pthread_mutex_init - operations on mutexes
+pthread_mutex_lock [pthread_mutex_init] - operations on mutexes
+pthread_mutex_trylock [pthread_mutex_init] - operations on mutexes
+pthread_mutex_unlock [pthread_mutex_init] - operations on mutexes
+pthread_once - once-only initialization
+pthread_self - return identifier of current thread
+pthread_setcancelstate [pthread_cancel] - thread cancellation
+pthread_setcanceltype [pthread_cancel] - thread cancellation
+pthread_setschedparam - control thread scheduling parameters
+pthread_setspecific [pthread_key_create] - management of thread-specific data
+pthread_sigmask - handling of signals in threads
+pthread_testcancel [pthread_cancel] - thread cancellation
+Links:
+Fundamentals Of Multithreading - Paul Mazzucco
+Native Posix Thread Library for Linux
+Introduction to Programming Threads
+Getting Started With POSIX Threads
+ITS: Introduction to Threads
+GNU Portable Threads
+Introduction of threads for Solaris, Linux, and Windows
+Comparison of thread implementations
+comp.programming.threads FAQ
+An in-depth description of PMPthread internal queue functions.
+Examples
+Pthreads tutorial and examples of thread problems - by Andrae Muys
+Valgrind KDE thread checker: Helgrind
+Sun's Multithreaded Programming Guide - Not Linux but a good reference.
+FSU Pthreads (POSIX Threads)
+Linux-mag.com: Concurrent Programming Topics - semaphores, condition variables
+Linux-mag.com: The Fibers of Threads - Discussion of how Linux threads work
+Platform independent threads:
+Gnome GLib 2.0 threads - Thread abstraction; including mutexes, conditions and thread private data. [example]
+OmniORB (CORBA) Thread Library
+zThreads
+C++ Thread classes:
+GNU: Common C++ - support for threading, sockets, file access, daemons, persistence, serial I/O, XML parsing and system services
+ACE: Adaptive Communication Environment - C++ interface
+ACE programmers guide: [pdf] (see page 29 for threads)
+Thread management examples using ACE
+Hood - A C++ Threads Library for Multiprogrammed Multiprocessors
+C++ Thread classes - sourceforge
+QpThread
+News Groups:
+
+comp.programming.threads
+comp.unix.solaris
+ Books:
+	Pthreads Programming A POSIX Standard for Better Multiprocessing
+By Bradford Nichols, Dick Buttlar, Jacqueline Proulx Farrell
+ISBN #1-56592-115-1, O'Reilly
+Amazon.com
+	Programming with POSIX(R) Threads
+By David R. Butenhof
+ISBN #0201633922, Addison Wesley Pub. Co.
+Amazon.com
+	C++ Network Programming Volume 1
+By Douglas C. Schmidt, Stephen D. Huston
+ISBN #0201604647, Addison Wesley Pub. Co.
+Covers ACE (ADAPTIVE Communication Environment) open-source framework view of threads and other topics.
+
+Amazon.com
+	Dr. Dobb's Journal
+Free subscription to the premier resource for professional programmers and software developers. Multi-language and multi-platform with program listings, coding tips, design issue discussions and algorithms. Subscribe here!
+
+Free
+Subscription
+See http://YoLinux.com for more Linux information and tutorials
+Return to YoLinux Tutorial Index
+Feedback Form
+Copyright © 2002, 2003, 2004 by Greg Ippolito
+
+
+Page
+6
+of 9
+Page 1 of 9
+RMIT Classification: Trusted
+School of Computing Technologies
+COSC1114 Operating Systems Principles
+Assignment 1
+Assessment Type: Individual assignment; no group work.
+Submit online via Canvas → Assignments → Assignment 1.
+Clarifications/updates may be made via announcements and relevant
+discussion forums.
+Due Date: Week 5, Friday 18th August 2023, 11:59pm.
+Weighting: 100 marks that contribute 30% of the total assessment.
+1. Overview
+This assignment focuses on the concept of multithreading.
+It is common in modern programming to have a program running multiple threads to solve a problem.
+In this assignment you will compare the performance of a single-threaded program and multi-threaded
+program to copy a text file (a text file is not just a file that ends in .txt but any file that contains text,
+such as source code).
+Please note that it is expected that your program will compile and run cleanly on the provided servers:
+titan.csit.rmit.edu.au
+jupiter.csit.rmit.edu.au
+saturn.csit.rmit.edu.au
+Please make sure that your program will suffer no memory leaks or other invalid memory operations.
+2. Learning outcomes
+This assessment is relevant to the Course Learning Outcomes CLOs 2, 5, and 6.
+3. Assessment details
+This assessment will determine your ability to
+1. Understand the concepts taught over the first 4 weeks of the course.
+2. Work independently in self-directed study to research the identified issues.
+4. Submission
+Your assignment should follow the requirement below and submit via Canvas → Assignments →
+Assignment 1. You may resubmit the assignment if you need to, only the most recent version will be
+marked. Failure to follow the requirements incurs up to 10 marks penalty for this assessment.
+Page 2 of 9
+RMIT Classification: Trusted
+You will submit two things:
+1. Your C++ source code in a zip file.
+If your student ID is s1234567, then please create a zip file named s1234567_OS_A1.zip
+including the code you have developed and a README file, in which please specify in detail how
+to run your code on the provided servers.
+2. Your report in pdf format.
+Use at least 12-point font size. If your student ID is s1234567, then please create a pdf file named
+s1234567_OS_A1.pdf.
+Turnitin will not accept PDF image files, forms, or portfolios, files that do not contain highlightable
+text (e.g., a scanned file - usually an image), documents containing multiple files or files created
+with software other than Adobe Acrobat. To determine if a document contains actual text, copy,
+and paste a section or all the text into a plain-text editor such as Microsoft Notepad or Apple
+TextEdit. If no text is copied over, the selection is not actual text.
+It is your responsibility to correctly submit your files. Please verify that your submission is correctly
+submitted by downloading what you have submitted to see if your submitted file includes the correct
+content.
+Never leave submission to the last minute – you may have difficulty uploading files.
+You can submit multiple times – a new submission will override any earlier submissions. However, if
+your final submission is after the due time, late penalties will apply.
+5. Academic integrity and plagiarism
+It is understood by us that many of the algorithms used in this course have common implementations.
+You are welcome to look at online code examples to understand possible solutions to the set problems.
+However, what you submit must be your own work and your submission will be checked and
+compared with other solutions. The penalties for submitting code that is not your own can be
+severe. Do not simply copy other people's work, it is not difficult for us to detect copied work
+and we will pursue such cases.
+6. Late submission policy
+A penalty of 10% per day of the total available marks will apply for each day being late. After 10 days,
+you will receive zero marks for the assignment.
+If you want to seek an extension of time for assignment submission, you must have a substantial
+reason for that, such as unexpected circumstances. Reasons such as, unable to cope with study load,
+is not substantial. Also, you must apply for an extension as soon as possible. Last minute extensions
+cannot be granted unless it attracts special consideration.
+Please find out how to apply for special consideration online at
+https://www.rmit.edu.au/students/student-essentials/assessment-and-results/special-
+consideration/eligibility-and-how-to-apply.
+Any student wishing an extension must go through the official procedure for applying for extensions
+and must apply at least a week before the due date. Do not wait till the submission due date to apply
+for an extension.
+Page 3 of 9
+RMIT Classification: Trusted
+7. Rubric and marking guidelines
+The rubric can also be found in Canvas → Assignments → Assignment 1.
+For each assessment requirement, the rubric is designed to be general and the details of what you
+can improve on will be outlined by your marker in the comments. Nevertheless, this should be treated
+as a guide to what to aim for. Please note that code with segmentation faults in the respective part of
+the assignment we are assessing cannot get above 50%, and code with problems highlighted by
+valgrind cannot get over 75% in that part of the assignment.
+Requirement Little to no
+Attempt
+(0%)
+Poor (25%) OK (50%) Good (75%) Excellent
+(100%)
+1. File copier
+without
+threading
+(20%)
+No attempt A reasonable
+attempt but it
+does not
+compile.
+Code compiles but
+is an incomplete
+implementation.
+Mostly complete
+implementation
+but there are
+minor problems.
+Excellent job.
+Well done.
+2.
+Multithreaded
+Program
+(20%)
+No attempt. Some attempt
+but did not get
+the code working
+or does not
+compile.
+Code compiles but
+threading is not
+consistently
+implemented
+Threading works
+but is not
+configured based
+on command line
+arguments or a
+similar issue.
+Excellent job.
+Well done.
+3. Add locks
+(mutexes)
+(20%)
+No attempt. Some attempt to
+add locks but did
+not get the code
+working.
+Code compiles with
+mutexes but there
+are still major
+synchronization
+issues such as
+deadlocks and race
+conditions.
+Overall good
+implementation
+but there are
+minor issues like
+forgetting to
+release the locks
+before the
+program exits.
+Excellent job.
+Well done.
+4. Avoid busy
+waiting (20%)
+No attempt. Some attempt
+but most of the
+busy waiting is
+still occurring.
+A good attempt but
+only using the
+sleep() function.
+A good attempt
+using condition
+variables but there
+are minor
+problems such as
+some busy waiting
+still occurring.
+Excellent job.
+Well done.
+5. Report
+including
+timings (20%)
+No attempt
+at timing
+code
+You attempted
+timing code but
+could not get it
+to work.
+Timing code is
+working but there's
+not much analysis,
+or the analysis is
+incorrect.
+Poorly formatted
+or minor problems
+with analysis.
+Excellent job.
+Well done.
+Page 4 of 9
+RMIT Classification: Trusted
+8. Assignment tasks
+Build Environment
+You are expected to compile and run your code on titan, jupiter or saturn servers provided by
+the school. As such some revision of navigating the UNIX environment is advisable.
+You may use any c++ features up to and including c++20.
+A reminder that you can enable c++20 features on the servers using the command:
+$scl enable devtoolset-11 bash
+You can then let the compiler know you wish to use c++20 features with the flags:
+-Wall -Werror -std=c++20
+And these are the flags we want you to use in your assignment.
+Code Quality
+Please note that while code quality is not specifically marked for, it is part of what is assessed as this
+course teaches operating systems principles partly through the software you develop. As such lack
+of comments, lack of error checking, good variable naming, avoidance of magic numbers, etc., may
+be taken into consideration by your marker in assigning marks for the components of this assignment,
+although operating systems principles do take priority.
+C Libraries
+For this assignment and other assignments in this course we will introduce you to libraries written in
+the C language. Typically, operating systems provide a set of C functions that allow you to request
+services. These are what's called system call libraries. We will use the pthread library in this
+assignment which is a system call library that provides threading functionality.
+One issue you will face is that pthread is separately linked which means the executable code for
+the functions is stored in a different place to the standard library functions.
+Hint: You will need to let the compiler know in the linking phase of compilation to link in the pthread
+library by proving the linker flag: -lpthread.
+Another thing you need to be aware of (you may not have come across before although it is part of
+the c++ language) is void pointers (void *). A void pointer is a special kind of pointer that has no
+type associated with it.
+Hint: You can assign any other kind of pointer to it, but you must cast that pointer type to another
+pointer type before you can use it.
+Memory Correctness
+All accesses to memory are expected to be correct (no reading from uninitialized memory, out of
+bounds access, not freeing memory that was allocated) and we will check for these things with
+valgrind on the provided UNIX servers. Please check your code prior to submission with
+valgrind and if you are unsure how to do this, ask the teaching staff. Memory incorrect code will
+attract a deduction especially as this is an operating systems course. You will need to compile each
+source file with the -g flag to get sensible output such as line numbers and variable names.
+Page 5 of 9
+RMIT Classification: Trusted
+The command to test your code with valgrind is:
+$valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all
+[executable name] [args]
+For example (all on one line):
+$valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all
+./mtcopier 100 ~/e70949/shared/osp2023/data.512m /tmp/e70949output
+Note: you should replace e70949 with your student number.
+Starter Code
+Starter code for this assignment will be available from this URL:
+https://github.com/muaddib1971/osp2023-startup
+You are expected to start from this code to implement the required solutions for this assignment.
+Task 1 – Single-threaded file copier (20 marks)
+Write a single threaded C++ program that reads data from one file and writes it to another. The two
+files need to be identical at the end of this program. The program should read data one line at a time.
+You should consider extensibility in your design as we will modify this program in the next step to
+make it multithreaded. At the very least consider two separate classes for reading and writing.
+Your program will be invocable as: $./copier infile outfile
+where infile is the file to be copied and outfile is the destination and these may be any valid
+filesystem path.
+Keep a copy of this program as you will compare the performance of this program with the modified
+version and submit both.
+As part of creating this initial program, write a makefile that compiles each source file and links
+together into an executable file.
+Your makefile should build Task 1 program when I type “make copier” from the command line.
+Task 2 – Multi-threaded file copier (20 marks)
+Modify the program you created in Task 1 to be multithreaded. You will have a ‘team’ of readers and
+a ‘team’ of writer threads. The reader threads will take turns reading lines from the file and storing
+them in a shared queue. The writers likewise will take turns removing lines from the queue and writing
+them to the target file.
+Update your makefile to have a separate target for this new program.
+Your makefile should build Task 2 program when I type “make mtcopier" from the command line.
+Task 3 – Insert locks (20 marks)
+You will need to insert locks into the appropriate places using the pthread_mutex API to lock other
+threads out of accessing important resources (such as file reading, the queue, etc.) so that there are
+no race conditions or deadlocks.
+Page 6 of 9
+RMIT Classification: Trusted
+Task 4 – Avoid busy waiting (20 marks)
+You are to avoid busy waiting. Busy waiting is when a thread does nothing but check if some condition
+is met repeatedly. Instead, when you are waiting for a condition to be met you should use a sleep()
+function call or if you are aiming for a high distinction, a condition variable (see The API section for
+details). What this means is that if you use the sleep() solution you can get half the marks here but
+only a solution using the pthread_cond_* API can attract full marks.
+Your program will be invoked as: $./mtcopier numthreads infile outfile
+where numthreads will be an integer between 10 and 10000, infile and outfile are the same
+as in Task 1, for example:
+$./mtcopier 100 ~e70949/shared/osp2023/data.1g /tmp/output
+The experiment
+Insert timing code into the code you have developed to measure the duration of the distinct parts of
+the code such as reading from file, time to gain a lock, etc. You will output the timing information to
+standard output. Add an optional flag -t to the end of the command line arguments to allow this to be
+turned on. Your aim here is to reflect the relative time of the distinct parts of your code. Add this timing
+code to both the single-threaded and multi-threaded versions.
+For this you should use the C function clock().
+clock() returns CPU time (number of clock cycles) since the program started. However, we normally
+want that time in seconds that some tasks took and if there are a series of tasks, we want to capture
+the duration of each event and only convert to seconds at the end. You will need to include the
+<time.h> header file to use the clock() function.
+Hint: please note that clock() returns ((clock_t)-1) on error and so you should check for this
+value when you call the clock() function.
+To time a single event we would do the following:
+clock_t start = clock();
+... task code goes here ...
+clock_t end = clock();
+clock_t duration = end - start;
+This will give us the number of elapsed clock cycles. We can convert this to seconds with a line such
+as: int seconds = (int)duration / (double)CLOCKS_PER_SEC;
+We have generated some random data files so you can compare the time it takes for distinct parts of
+the code you have written.
+• If you look in the directory ~e70949/shared/osp2023 on titan, jupiter or saturn servers
+(this will only work when logged into the terminal, programs like WinSCP and FileZilla do not
+understand this kind of path) you will see data files of sizes 512 megabytes (data.512m), 1
+gigabyte (data.1g), 2 gigabytes (data.2g), and 4 gigabytes (data.4g).
+• Use these files as input to test the time for parts of your program. When running your experiments,
+you will need to output to the /tmp as there is more space available there. To avoid conflicts,
+prepend all output files with your student number and delete the output files after you are
+done.
+Page 7 of 9
+RMIT Classification: Trusted
+You should test each of these four files with 10 threads, 100 threads, 1000 threads, and 10000 threads.
+Note: each run might vary slightly in terms of time, so you want to run each combination multiple
+times and take the average.
+Output the timing results based on these file sizes and collate this data into a table.
+Task 5 – The report (20 marks including timing)
+Set up your experimental runs to answer the following questions:
+1. Why did you choose to measure these parts – provide reasons for each.
+2. Where was the most time spent? How does that relate to the operations being done and to the
+overall time?
+3. Did increasing and/or decreasing the number of threads change the performance of the program?
+How do you account for this?
+4. Was it worthwhile to turn this program into a multithreaded program? Explain your reasoning.
+Please include sensible experimental results (including timing results of distinct parts based on
+different file sizes) to support your discussion.
+Please ensure your report (no more than 3 pages) is neat and professionally presented.
+Page 8 of 9
+RMIT Classification: Trusted
+9. The API
+Note: this is a basic API of the functions we want you to use for concurrency and thread safety. Please
+refer to the man pages for these functions on titan for further details. The man pages also have
+examples of how to use these functions.
+Please note that all functions return result values which you are expected to check in your code.
+int pthread_create(
+pthread_t *thread,
+const pthread_attr_t *attr,
+void *(*start_routine)(void*),
+void *arg);
+The pthread_create() function creates a thread with the specified attributes. The new thread starts
+execution by invoking start_routine(); arg is passed as the sole argument of start_routine().
+Hint: a void pointer is just a pointer that can point to any pointer type. attr can be ignored for this
+assignment (just pass in a nullptr, the default attributes shall be used).
+Find out more on titan: $man pthread_create
+Your program should wait for the threading function to complete by calling the function:
+int pthread_join(pthread_t thread, void **retval);
+The pthread_join() function waits for the thread specified by thread to terminate. If that thread has
+already terminated, then pthread_join() returns immediately. The thread specified by thread must be
+joinable.
+Find out more on titan: $man pthread_join
+The following functions are used to manipulate mutexes which are variables that enforce mutual
+exclusion. A mutex can only be locked by one thread at a time and all other threads that try to lock
+that mutex will sleep until the mutex becomes available.
+int pthread_mutex_init(
+pthread_mutex_t *mutex,
+const pthread_mutexattr_t *attr);
+The pthread_mutex_init() function shall initialize the mutex referenced by mutex with attributes
+specified by attr.
+Hint: you can pass in nullptr for attr and the default attributes are used.
+Find out more on titan: $man pthread_mutex_init
+int pthread_mutex_destroy(pthread_mutex_t *mutex);
+The pthread_mutex_destroy() function shall destroy the mutex object referenced by mutex; the
+mutex object becomes, in effect, uninitialized.
+Find out more on titan: $man pthread_mutex_destroy
+Page 9 of 9
+RMIT Classification: Trusted
+int pthread_mutex_lock(pthread_mutext_t *mutex);
+The mutex object referenced by mutex shall be locked by calling pthread_mutex_lock(). If the mutex
+is already locked, the calling thread shall block until the mutex becomes available. This operation
+shall return with the mutex object referenced by mutex in the locked state with the calling thread as
+its owner.
+Find out more on titan: $man pthread_mutex_lock
+int pthread_mutex_unlock(pthread_mutex_t *mutex);
+The pthread_mutex_unlock() function shall release the mutex object referenced by mutex.
+Find out more on titan: $man pthread_mutex_unlock
+Avoiding Busy Waiting
+For the basic marks for this, you can use the sleep function which is in <unistd.h>:
+int sleep (int seconds);
+For top marks however, you will need to use condition variables. These block until some condition
+is met although they may wake up before then, so you need to use them in a loop. The functions for
+these are:
+int pthread_cond_init(pthread_cond_t *cond,
+const ptread_condattr_t *attr);
+The pthread_cond_init() function shall initialize the condition variable referenced by cond with
+attributes referenced by attr. If attr is NULL, the default condition variable attributes shall be used.
+Find out more on titan: $man pthread_cond_init
+int pthread_cond_destroy(pthread_cond_t *cond);
+The pthread_cond_destroy() function shall destroy the given condition variable specified by cond;
+the object becomes, in effect, uninitialized.
+Find out more on titan: $man pthread_cond_destroy
+int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex);
+blocks the current thread (it sits there waiting) until the function returns.
+Upon return, either the condition has been satisfied (have a global or shared variable that
+represents this) or you would call this function again.
+Hint: the mutex must be locked when passed in, it is a bug for this not to be the case.
+Find out more on titan: $man pthread_cond_wait
+int pthread_cond_signal(pthread_cond_t *cond);
+sends a signal to one of the waiting threads that it can wake up and continue with the work as the
+condition waited upon has been satisfied.
+Find out more on titan: $man pthread_cond_signal

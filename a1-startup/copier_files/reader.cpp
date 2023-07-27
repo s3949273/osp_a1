@@ -14,11 +14,9 @@ void reader::run() {
     std::string line;
     while(std::getline(in, line)){
         //while there is a line, append the line to the writer's queue
-        // std::cout<<line<<std::endl;
         this->thewriter.append(line);
     }
     in.close();
-    // std::cout<<"this end of run fn"<<std::endl;
     this->thewriter.run();
     
 }

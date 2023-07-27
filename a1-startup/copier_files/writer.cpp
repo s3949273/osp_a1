@@ -18,7 +18,6 @@ void writer::run() {
     while(this->queue.size() > 1){
         out << this->queue.front()<<std::endl;
         this->queue.pop_front();
-        std::cout<<this->queue.size()<<" ";
     }
     out << this->queue.front();
     this->queue.pop_front();

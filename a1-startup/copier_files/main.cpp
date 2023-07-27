@@ -7,6 +7,7 @@
 #include "pthread.h"
 #include <cstdlib>
 #include <iostream>
+#include <ctime>
 using std::cout;
 using std::endl;
 
@@ -25,10 +26,14 @@ int main(int argc, char** argv) {
     }else{
         //correct amount of command line arguments
         //initialise writer
+
         writer writer((std::string)argv[2]);
         //initialise reader
         reader reader((std::string)argv[1], writer);
+        std::clock_t start = std::clock();
         reader.run();
+        double duration =( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+        std::cout<<"duration was: "<<duration<<endl;
     }
     /* load the file and copy it to the destination */
     
