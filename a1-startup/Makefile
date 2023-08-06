@@ -20,15 +20,13 @@ copier:
 
 mtcopier:
 	@echo making multi-threaded copier...
-	g++ -Wall -Werror -std=c++20 -g ./mtcopier_files/*.cpp -o mtcopier
+	g++ -Wall -Werror -std=c++20 -pthread -g ./mtcopier_files/*.cpp -o mtcopier
 	@echo "done"
 #clean by going into each directory and running make clean
 clean: 
 	@echo "cleaning up..."
-	@rm -rf copier
-	@rm -rf mtcopier
-	@cd copier_files && $(MAKE) clean;
-	@cd mtcopier_files && $(MAKE) clean;
+	@rm -rf copier mtcopier *.dSYM
+	
 	@echo "done"
 
 

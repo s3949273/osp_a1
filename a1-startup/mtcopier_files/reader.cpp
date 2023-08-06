@@ -10,66 +10,35 @@
  * implement the functions needed for this class
  **/
 std::ifstream reader::in;
-unsigned reader::threads_to_spawn;
-pthread_cond_t reader::cond;
-pthread_mutex_t reader::lock;
+pthread_t reader::thread;
 
 void reader::init(const std::string& name) {
     in.open(name);
 }
-void *PrintHello(void *threadid) {
-   long tid;
-   tid = (long)threadid;
-   std::cout << "Hello World! Thread ID, " << tid << std::endl;
-   pthread_exit(NULL);
-}
 
-
-void reader::run() {
-    pthread_t threads[threads_to_spawn-1];
-    lock =  PTHREAD_MUTEX_INITIALIZER;
-    while(!in.eof()){
-        for(size_t i = 0; i< threads_to_spawn; i++){
-            if(pthread_create(&threads[i], NULL, runner, (void * )&in)!=0){
-                std::cout<<"something went wrong creating the thread:"<<i<<std::endl;
-            }else{
-                std::cout<<"created reader thread: "<<i<<std::endl;
-            }
-        }
-        for(size_t i = 0; i<threads_to_spawn; i++){
-            //join the threads, right now we do not expect anything to be returned
-            if(pthread_join(threads[i], NULL) != 0){
-                std::cout<<"Something went wrong joining thread:" <<threads[i]<<std::endl;
-            }else{
-                std::cout<<"joined reader thread: "<<i<<std::endl;
-                writer::signal();
-            }
-        }
+void reader::run(){
+    if(pthread_create(&thread, NULL, runner, (void *)&in)!= 0){
+        std::cout<<"Something went wrong initialising the thread"<<std::endl;
+    }else{
+        std::cout<<"created a thread"<<std::endl;
     }
-    //destroy condition, and mutex
-    // pthread_cond_destroy(&cond);
-    pthread_mutex_destroy(&lock);
-    std::cout<<"finished reading successfully"<<std::endl;
-    in.close();
-    writer::setfinished();
 }
 
-void* reader::runner(void* arg) {
-    //cast void pointer to ifstream pointer
+void* reader::runner(void* arg) { 
+    pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_lock(&lock);
+    std::ifstream* i_file = (std::ifstream*)arg;
     std::string line = "";
-    if(pthread_mutex_lock(&lock)!= 0){
-        std::cout<<"something went wrong obtaining the reader lock"<<std::endl;
-    }
-    std::ifstream* input = (std::ifstream*) arg;
-    
-    if(!input->fail() && !input->eof()){
-       //if there is a line to get, then get it
-        getline(*input, line);
-        std::cout<<line<<std::endl; 
+    if(!i_file->eof()){
+        getline(*i_file, line);
         writer::append(line);
+        
+    }else{
+        writer::setfinished();
     }
-    if(pthread_mutex_unlock(&lock) != 0){
-        std::cout<<"something went wrong when unlocking the mutex lock!"<<std::endl;
+    if(pthread_join(thread, NULL)!=0){
+        std::cout<<"somethign went wrong joining the thread"<<std::endl;
     }
-    return nullptr;
-}
+    pthread_mutex_unlock(&lock);
+        return nullptr; 
+    }
