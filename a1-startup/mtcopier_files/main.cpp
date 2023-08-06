@@ -36,16 +36,21 @@ int main(int argc, char** argv) {
     }else{
         //correct amount of command line arguments
         //make sure to do some input validation
-
+        writers->threads_to_spawn = atoi(argv[1]);
+        readers->threads_to_spawn = atoi(argv[1]);
         std::cout<<"read/writing with "<<argv[1]<<" number of threads"<<std::endl;
-
         readers->init((std::string)argv[2]);
-        std::cout<<"using: "<<argv[1]<<" threads"<<std::endl;
-        readers->set_threads_to_spawn(std::atoi(argv[1]));
-        std::clock_t start = std::clock();
+        writers->init((std::string)argv[3]);
+        std::clock_t r_start = std::clock();
         readers->run();
-        double duration =( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-        std::cout<<"duration was: "<<duration<<std::endl;
+        double duration =( std::clock() - r_start ) / (double) CLOCKS_PER_SEC;
+        std::cout<<"duration for reading was: "<<duration<<std::endl;
+
+        
+        std::clock_t w_start = std::clock();
+        writers->run();
+        duration = (std::clock() - w_start)/ (double) CLOCKS_PER_SEC;
+        std::cout<<"duration for writing was: "<<duration<<std::endl;
     }
 
 

@@ -24,11 +24,21 @@ class writer {
         static void* runner(void*);
         void run();
         static void append(const std::string& line);
-
-        //added by me
+        //had to be added
         static void setfinished();
+        //doesn't matter if this is public
+        static void print();
+        static unsigned threads_to_spawn;
+        static pthread_cond_t line_ready;
+        static void signal();
     private:
+
         static std::ofstream out;
         static std::deque<std::string> queue;
+        static bool is_finished;
+        
+        static pthread_mutex_t lock;
+        static pthread_t threads;
+        
 };
 #endif

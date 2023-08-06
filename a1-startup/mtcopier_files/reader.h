@@ -38,10 +38,9 @@ class reader {
      * there may be other functions you need so declare them.
      **/
 
-
+    static unsigned threads_to_spawn;   
    private:
     static std::ifstream in;
-    static unsigned threads_to_spawn;   
     static pthread_mutex_t lock;
     static pthread_cond_t cond;
     /**
