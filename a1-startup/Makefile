@@ -28,6 +28,3 @@ clean:
 	@rm -rf copier mtcopier *.dSYM
 	
 	@echo "done"
-
-
-

@@ -7,30 +7,17 @@
     #include <unistd.h>
     #include "writer.h"
 
-    /**
-     * implement the functions needed for this class
-     **/
-    std::ifstream reader::in;
-    pthread_t reader::r_thread;
-    pthread_mutex_t* reader::r_mutex;
-    void reader::init(const std::string& name){
-        in.open(name);
-    }
+/**
+ * implement the functions needed for this class
+ **/
+std::ifstream reader::in;
 
-    void reader::join(){
-        int ret = pthread_join(r_thread, NULL);
-        if(ret !=0 ){
-            std::cout<<"Err there was a problem joining threads"<<std::endl;
-        }else{
-            std::cout<<"finished joining reader threads"<<std::endl;
-        }
-        if(in.is_open()){
-            in.close();
-            std::cout<<"closed input file"<<std::endl;
-        }
-    }
+pthread_mutex_t* reader::r_mutex;
 
-    void reader::run() {
+void reader::init(const std::string& name) {
+    in.open(name);
+}
+void reader::run() {
         if(in.is_open()){
             if(pthread_create(&r_thread, NULL, runner, NULL)!=0){
                 std::cout<<"something went wrong creating the thread"<<std::endl;
