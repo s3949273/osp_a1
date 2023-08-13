@@ -29,21 +29,21 @@ class reader {
      * know about classes
      **/
     static void* runner(void*);
-    static void set_threads_to_spawn(int threads);
+
     /**
      * does the setup for and launches the threads
      **/
     void run();
+    void join();
     /**
      * there may be other functions you need so declare them.
      **/
-
-
+      static pthread_t r_thread;
+      static pthread_mutex_t* r_mutex;
    private:
-    static std::ifstream in;
-    static unsigned threads_to_spawn;   
-    static pthread_mutex_t lock;
-    static pthread_cond_t cond;
+      static std::ifstream in;
+      
+    
     /**
      * There may be other private instance data you need so declare those here.
      **/
