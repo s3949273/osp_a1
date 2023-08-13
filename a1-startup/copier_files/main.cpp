@@ -30,9 +30,9 @@ int main(int argc, char** argv) {
         writer writer((std::string)argv[2]);
         //initialise reader
         reader reader((std::string)argv[1], writer);
-        std::clock_t start = std::clock();
+        std::clock_t prog_start = std::clock();
         reader.run();
-        double duration =( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+        double duration =( std::clock() - prog_start ) / (double) CLOCKS_PER_SEC;
         std::cout<<"duration was: "<<duration<<endl;
     }
     /* load the file and copy it to the destination */

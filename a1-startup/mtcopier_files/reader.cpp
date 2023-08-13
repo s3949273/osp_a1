@@ -20,7 +20,7 @@
     void reader::join(){
         int ret = pthread_join(r_thread, NULL);
         if(ret !=0 ){
-            std::cout<<"Err: "<<strerror(ret)<<std::endl; 
+            std::cout<<"Err there was a problem joining threads"<<std::endl;
         }else{
             std::cout<<"finished joining reader threads"<<std::endl;
         }

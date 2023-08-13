@@ -23,7 +23,7 @@ void writer::init(const std::string& name) {
 void writer::join(){
     int ret = pthread_join(w_thread, NULL);
     if(ret !=0 ){
-        std::cout<<"Err: "<<strerror(ret)<<std::endl; 
+        std::cout<<"Err during joining of threads"<<std::endl;
     }else{
         std::cout<<"finished joining writer threads"<<std::endl;
     }
@@ -64,7 +64,7 @@ void* writer::runner(void* arg) {
         }
         int ret = pthread_mutex_unlock(w_mutex);
         if(ret!=0){
-            std::cout<<"something went wrong unlocking writer lock"<<strerror(ret)<<std::endl;
+            std::cout<<"there was a problem unlocking writer mutex"<<std::endl;
         }
     }
     pthread_exit(NULL);
