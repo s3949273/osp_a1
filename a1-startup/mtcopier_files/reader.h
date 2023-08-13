@@ -21,26 +21,29 @@ class reader {
      * file. There will be other things which you will need to figure out
      * as you complete the assignment.
      **/
-   static void init(const std::string& name);
+    static void init(const std::string& name);
 
     /**
      * the method that implements the thread. It has to be static as the first
      * implicit argument to all instance methods is 'this' and c functions don't
      * know about classes
      **/
-   static void* runner(void*);
-   static pthread_t get_thread();
+    static void* runner(void*);
+
     /**
      * does the setup for and launches the threads
      **/
     void run();
+    void join();
     /**
      * there may be other functions you need so declare them.
      **/
-
+      static pthread_t r_thread;
+      static pthread_mutex_t* r_mutex;
    private:
-    static std::ifstream in;
-    static pthread_t thread;
+      static std::ifstream in;
+      
+    
     /**
      * There may be other private instance data you need so declare those here.
      **/

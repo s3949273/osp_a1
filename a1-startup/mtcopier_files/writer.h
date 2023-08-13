@@ -25,10 +25,15 @@ class writer {
     void run();
     static void append(const std::string& line);
     static void setfinished();
-    static void print();
+    static void join();
 
+    static bool finished;
+    static pthread_mutex_t* w_mutex;
+    static pthread_t w_thread;
+    static pthread_cond_t line_ready;
    private:
     static std::ofstream out;
+    
     static std::deque<std::string> queue;
 };
 #endif

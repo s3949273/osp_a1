@@ -1,44 +1,68 @@
-/**
- * startup code provided by Paul Miller for COSC1114 - Operating Systems
- * Principles
- **/
-#include "reader.h"
 
-#include "writer.h"
+    /**
+     * startup code provided by Paul Miller for COSC1114 - Operating Systems
+     * Principles
+     **/
+    #include "reader.h"
+    #include <unistd.h>
+    #include "writer.h"
 
-/**
- * implement the functions needed for this class
- **/
-std::ifstream reader::in;
-pthread_t reader::thread;
-
-void reader::init(const std::string& name) {
-    in.open(name);
-}
-
-void reader::run(){
-    if(pthread_create(&thread, NULL, runner, (void *)&in)!= 0){
-        std::cout<<"Something went wrong initialising the thread"<<std::endl;
-    }else{
-        std::cout<<"created a thread"<<std::endl;
+    /**
+     * implement the functions needed for this class
+     **/
+    std::ifstream reader::in;
+    pthread_t reader::r_thread;
+    pthread_mutex_t* reader::r_mutex;
+    void reader::init(const std::string& name){
+        in.open(name);
     }
-}
 
-void* reader::runner(void* arg) { 
-    pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-    pthread_mutex_lock(&lock);
-    std::ifstream* i_file = (std::ifstream*)arg;
-    std::string line = "";
-    if(!i_file->eof()){
-        getline(*i_file, line);
-        writer::append(line);
-        
-    }else{
-        writer::setfinished();
+    void reader::join(){
+        int ret = pthread_join(r_thread, NULL);
+        if(ret !=0 ){
+            std::cout<<"Err: "<<strerror(ret)<<std::endl; 
+        }else{
+            std::cout<<"finished joining reader threads"<<std::endl;
+        }
+        if(in.is_open()){
+            in.close();
+            std::cout<<"closed input file"<<std::endl;
+        }
     }
-    if(pthread_join(thread, NULL)!=0){
-        std::cout<<"somethign went wrong joining the thread"<<std::endl;
+
+    void reader::run() {
+        if(in.is_open()){
+            if(pthread_create(&r_thread, NULL, runner, NULL)!=0){
+                std::cout<<"something went wrong creating the thread"<<std::endl;
+            }
+        }else{
+            std::cout<<"input file was not open"<<std::endl;
+        }
+
     }
-    pthread_mutex_unlock(&lock);
+
+    void* reader::runner(void* arg) {   
+        while(true){    
+            std::string line = "";
+            if(pthread_mutex_lock(r_mutex)!=0){
+                std::cout<<"something went wrong locking"<<std::endl;
+            }
+            if(getline(in, line)){
+                writer::append(line);
+                pthread_cond_signal(&writer::line_ready);
+            }else{
+                if(!writer::finished){
+                    writer::setfinished();
+                }
+                if(pthread_mutex_unlock(r_mutex)!=0){
+                    std::cout<<"something went wrong unlocking reader lock"<<std::endl;
+                }
+                break;
+            }
+            if(pthread_mutex_unlock(r_mutex)!=0){
+                std::cout<<"something went wrong unlocking"<<std::endl;
+            }
+        }
+        pthread_exit(NULL);
         return nullptr; 
     }
