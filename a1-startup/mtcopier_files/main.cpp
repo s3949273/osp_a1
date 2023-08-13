@@ -37,24 +37,48 @@ int main(int argc, char** argv) {
     if(argc!= 4){
         std::cout<<"incorrect amount of command line arguments, expected 3, got: "<<argc-1<<std::endl;
     }
-
-
-    /**
-     * initiliaze the reader and writer classes
-     **/
-    /**
-     * initialize the running of each thread. Note you just call run() on each
-     * object here, you'll call pthread_create itself in the run function.
-     **/
-
-
-
-
-    /**
-     *
-     * have loop here waiting for the threads to bomplete. Please see
-     * section on avoiding busy waiting on the assignment specification to see
-     * what need to be done here
-      **/
+    else{
+        try{
+            /**
+             * process command line arguments
+             **/
+            const unsigned int num_threads = std::stoi(argv[1]);
+              /**
+             * initiliaze the reader and writer classes
+             **/
+            readers = new reader[num_threads];
+            writers = new writer[num_threads];
+            readers->init(argv[2]);
+            writers->init(argv[3]);
+            
+            pthread_mutex_init(&shared_mutex,NULL);
+            readers->r_mutex = &shared_mutex;
+            writers->w_mutex = &shared_mutex;
+            
+            /**
+             * initialize the running of each thread. Note you just call run() on each
+             * object here, you'll call pthread_create itself in the run function.
+             **/
+            std::clock_t prog_start = std::clock();
+            for(size_t x = 0; x<num_threads; x++){
+                readers[x].run();
+                writers[x].run();
+            }
+            
+            /**
+             *
+             * have loop here waiting for the threads to bomplete. Please see
+             * section on avoiding busy waiting on the assignment specification to see
+             * what need to be done here
+            **/
+            readers->join();
+            writers->join();
+            
+            std::cout<<"duration was: "<<( std::clock() - prog_start ) / (double) CLOCKS_PER_SEC<<std::endl;
+        }catch(...){
+            std::cout<<"The command line argument which was supposed to contain the number of threads did not contain any numbers"<<std::endl;
+        }
+    }
+    std::cout<<"end of program, have a nice day"<<std::endl;
     return EXIT_SUCCESS;
 }

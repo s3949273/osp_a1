@@ -13,6 +13,7 @@
 std::ifstream reader::in;
 
 pthread_mutex_t* reader::r_mutex;
+pthread_t reader::r_thread;
 
 void reader::init(const std::string& name) {
     in.open(name);
