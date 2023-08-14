@@ -20,8 +20,10 @@ void writer::run() {
         this->queue.pop_front();
     }
     //we do this so that we do not append an empty line at the end
-    out<<this->queue.front();
-    this->queue.pop_front();
+    if(this->queue.size() == 1){
+        out<<this->queue.front();
+        this->queue.pop_front();
+    }
     //close the ofstream
     out.close();
 }
