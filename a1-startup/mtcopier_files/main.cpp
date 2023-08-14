@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
             readers->r_mutex = &shared_mutex;
             writers->w_mutex = &shared_mutex;
             
-            /**
+            /** 
              * initialize the running of each thread. Note you just call run() on each
              * object here, you'll call pthread_create itself in the run function.
              **/
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
                 readers[x].run();
                 writers[x].run();
             }
-            
+
             /**
              *
              * have loop here waiting for the threads to bomplete. Please see

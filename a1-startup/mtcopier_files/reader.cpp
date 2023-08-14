@@ -18,6 +18,18 @@ pthread_t reader::r_thread;
 void reader::init(const std::string& name) {
     in.open(name);
 }
+
+
+void reader::join(){
+    if(pthread_join(r_thread, NULL)!=0){
+        std::cout<<"Something went wrong joining reader threads"<<std::endl;
+    }
+    if(in.is_open()){
+        in.close();    
+    }
+}
+
+
 void reader::run() {
         if(in.is_open()){
             if(pthread_create(&r_thread, NULL, runner, NULL)!=0){
