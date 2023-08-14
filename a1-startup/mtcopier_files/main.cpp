@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
              * initialize the running of each thread. Note you just call run() on each
              * object here, you'll call pthread_create itself in the run function.
              **/
-            std::clock_t prog_start = std::clock();
+            clock_t prog_start = clock();
             for(size_t x = 0; x<num_threads; x++){
                 readers[x].run();
                 writers[x].run();
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
             readers->join();
             writers->join();
             
-            std::cout<<"duration was: "<<( std::clock() - prog_start ) / (double) CLOCKS_PER_SEC<<std::endl;
+            std::cout<<"duration was: "<<( clock() - prog_start ) / (double) CLOCKS_PER_SEC<<std::endl;
         }catch(...){
             std::cout<<"The command line argument which was supposed to contain the number of threads did not contain any numbers"<<std::endl;
         }
